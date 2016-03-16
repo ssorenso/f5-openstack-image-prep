@@ -1,0 +1,22 @@
+sudo: false
+language: python
+python:
+    - '2.7'
+    - '2.6'
+before_install:
+    - git config --global user.email "OpenStack_TravisCI@f5.com"
+    - git config --global user.name "Travis F5 Openstack"
+    - git fetch --depth=100
+install:
+    - apt-get install -y unzip qemu-utils lvm2 python-keystoneclient python-glanceclient python-eventlet python-suds python-paramiko
+    - pip install -r requirements.test.txt
+script:
+    - flake8 .
+    - py.test --cov --ignore=./f5_image_prep/test/functional
+notifications:
+  slack:
+    rooms:
+      - secure: <add room>
+      - secure: <add room>
+    on_success: change
+    on_failure: always
