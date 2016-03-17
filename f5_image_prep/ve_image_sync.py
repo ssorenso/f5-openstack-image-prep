@@ -23,11 +23,11 @@ from f5_image_prep.openstack.openstack import get_creds
 
 CONTAINERFORMAT = 'bare'
 DISKFORMAT = 'qcow2'
-PATCHTOOL = '/home/image_prep/f5-openstack-image-prep/bin/patch-image.sh'
+PATCHTOOL = '/home/imageprep/f5-openstack-image-prep/bin/patch-image.sh'
 STARTUPSCRIPT = \
-    '/home/image_prep/f5-openstack-image-prep/lib/f5-image-prep/startup'
+    '/home/imageprep/f5-openstack-image-prep/lib/f5_image_prep/startup'
 STARTUPFUNCS = \
-    '/home/image_prep/f5-openstack-image-prep/lib/f5-image-prep/' \
+    '/home/imageprep/f5-openstack-image-prep/lib/f5_image_prep/' \
     'openstack-functions/'
 WORKDIR = os.environ['HOME']
 

@@ -24,7 +24,7 @@ import sys
 
 BIGIPFILE = 'BIGIP-11.6.0.0.0.401.qcow2'
 VEIS_SCRIPT = \
-    '/home/image_prep/f5-openstack-image-prep/f5_image_prep/ve_image_sync.py'
+    '/home/imageprep/f5-openstack-image-prep/f5_image_prep/ve_image_sync.py'
 os.environ['OS_TENANT_NAME'] = 'admin'
 os.environ['OS_USERNAME'] = 'admin'
 os.environ['OS_PASSWORD'] = 'changeme'

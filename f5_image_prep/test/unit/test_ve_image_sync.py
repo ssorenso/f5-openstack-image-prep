@@ -21,7 +21,7 @@ from f5_image_prep.ve_image_sync import LocalFileNonExtant
 from f5_image_prep.ve_image_sync import VEImageSync as veis
 
 VEPATH = 'f5_image_prep.ve_image_sync.VEImageSync'
-HOMEDIR = '/home/image_prep/f5-openstack-image-prep/'
+HOMEDIR = '/home/imageprep/f5-openstack-image-prep/'
 
 
 class FakeImageModel(object):
@@ -68,7 +68,7 @@ def test__patch_image(VEImageSync):
             assert mock_subproc.call_args == \
                 mock.call(
                     ['sudo', '/bin/bash',
-                     '/home/image_prep/f5-openstack-image-prep/bin/'
+                     '/home/imageprep/f5-openstack-image-prep/bin/'
                      'patch-image.sh',
                      '-f', '-s', HOMEDIR + 'lib/f5-image-prep/startup',
                      '-d', HOMEDIR + 'lib/f5-image-prep/openstack-functions/',
