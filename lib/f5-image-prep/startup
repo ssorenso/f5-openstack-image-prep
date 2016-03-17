@@ -1,0 +1,183 @@
+#!/bin/bash
+# Copyright 2015-2016 F5 Networks Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+export PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin/:/config"
+
+source /config/openstack-functions/os-functions.sh
+source /config/openstack-functions/os-license.sh
+source /config/openstack-functions/os-network.sh
+source /config/openstack-functions/os-ssh.sh
+
+function generate_sha512_passwd_hash() {
+  salt=$(openssl rand -base64 8)
+  echo -n $(perl -e "print crypt(q[$1], \"\\\$6\\\$$salt\\\$\")")
+}
+
+function force_platform_id() {
+	log "Forcing /PLATFORM..."
+	printf 'platform=Z100\nfamily=0xC000000\nhost=Z100\nsystype=0x71\n' > /PLATFORM
+}
+
+function main() {
+
+	local FIRST_BOOT_FILE="/config/firstboot"
+
+	# Completion flag
+	local OS_MARKER_STARTUP_COMPLETE="/tmp/openstack_auto_config_completed"
+
+	# Wait for process settings
+	local STATUS_CHECK_RETRIES=20
+	local STATUS_CHECK_INTERVAL=10
+
+	local USER_DATA_FOUND=0
+	
+	start=$(date +%s)
+	log "Starting OpenStack auto-configuration..."
+
+	# The management interface does not
+	# request MTU and does not handle
+	# it. If the management interface
+	# is on a tunnel and the meta-data
+	# or user-data is larger then 1500
+	# bytes, it will fail. This fixes it.
+	force_mgmt_mtu
+
+	# Test the platform ID to make sure we are running Z100
+	local platform=""
+	if [ -f /PLATFORM ]; then
+		. /PLATFORM
+	fi
+	if [ ${platform} != "Z100" ]; then
+		log "Cannot configure instance with platform ID ${platform}"
+		exit 0
+	fi
+
+	force_platform_id
+
+	# trigger password randomization on first boot
+	if [[ -f $FIRST_BOOT_FILE ]]; then
+		randomize_base_passwords
+	else
+		# non first boot policy
+		restore_issue
+	fi
+	
+	# This is not really a test since we are forcing the ID, but maybe this should check if
+	# this is an OpenStack instance running on Nova.
+    if [[ $(qp) == "Z100" ]]; then
+		log "Running OpenStack auto-configuration..."
+		
+		# ensure that mcpd is started and alive before doing anything
+		# try 20 times with a 10 second wait between attempts
+		wait_mcp_running $STATUS_CHECK_RETRIES $STATUS_CHECK_INTERVAL
+		if [[ $? == 0 ]]; then
+
+			# Wait for mcpd to be ready to serialize, 20 sec to accomodate a very slow VE
+			sleep 20
+			
+			# Save config
+			tmsh save sys config | eval $LOGGER_CMD
+
+			# Save user data to a local file (from os-datasource)
+			get_user_data
+			if [[ $? == 0 ]]; then
+
+				user_data_found=1
+				
+				# Set root SSH key
+				inject_openssh_key $(get_metadata_service_url) ${OS_META_DATA_TMP_FILE}
+
+				# Change admin and root password
+				change_passwords
+
+				# Configure base L2 and L3 neworking
+				configure_tmm_ifs
+
+				# setup license and provisioned modules
+				license_and_provision_modules
+
+				if [ -f $FIRST_BOOT_FILE ]; then
+					# shut off web setup screens
+					tmsh modify sys global-settings gui-setup disabled | eval $LOGGER_CMD
+					# set mgmt to Large - required to use iControl properly
+					tmsh modify sys db provision.extramb { value 500 } | eval $LOGGER_CMD
+					# wait for stuff to restart after resize mgmt to large
+					sleep 10
+					wait_mcp_running $STATUS_CHECK_RETRIES $STATUS_CHECK_INTERVAL
+				fi
+				
+				# setup global routes
+				configure_global_routes
+				
+				# run first boot command list
+				if [ -f $FIRST_BOOT_FILE ]; then
+					execute_firstboot_cmd
+				fi
+				# execute command list
+				execute_system_cmd
+			else
+				# no user data was supplied. Push a default policy file.
+				echo '{ "bigip": { "ssh_key_inject": "false", "network": { "dhcp": "true" } } }' > $OS_USER_DATA_T\
+					 MP_FILE
+				chmod 0600 $OS_USER_DATA_TMP_FILE
+				
+				# Configure base L2 and L3 neworking
+				configure_tmm_ifs
+				
+				if [ -f $FIRST_BOOT_FILE ]; then
+					# shut off web setup screens
+					tmsh modify sys global-settings gui-setup disabled | eval $LOGGER_CMD
+					# set mgmt to Large - required to use iControl properly
+					tmsh modify sys db provision.extramb { value 500 } | eval $LOGGER_CMD
+					# wait for stuff to restart after resize mgmt to large
+					sleep 5
+					wait_mcp_running $STATUS_CHECK_RETRIES $STATUS_CHECK_INTERVAL
+				fi
+			fi
+
+			# remove first boot file
+			if [ -f $FIRST_BOOT_FILE ]; then
+				rm -f $FIRST_BOOT_FILE
+			fi
+
+			# check that the control plane and data plane are completely up
+			wait_mcp_running $STATUS_CHECK_RETRIES $STATUS_CHECK_INTERVAL
+			wait_tmm_started $STATUS_CHECK_RETRIES $STATUS_CHECK_INTERVAL
+			
+			# now that TMOS is completely alive - save the configuration
+			tmsh save sys config | eval $LOGGER_CMD
+			
+			# restart icrd to avoid 11.5 icrd 404 errors because if fails to load
+			bigstart restart icrd
+			
+			echo `date +%s` > $OS_MARKER_STARTUP_COMPLETE
+			# set SELinux context for startup script complete flag file
+			chcon --type=tmp_t $OS_MARKER_STARTUP_COMPLETE
+		else
+			log "Cannot run OpenStack auto-configuration when MCPD in not running, quitting..."
+		fi
+		
+	else
+		log "Cannot run OpenStack auto-configuration on non-VE platforms, quitting..."
+	fi
+
+	cleanup_user_data
+	
+	finish=$(date +%s)
+	log "Completed OpenStack auto-configuration in $(($finish-$start)) seconds..."
+}
+
+main &
