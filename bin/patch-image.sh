@@ -121,7 +121,6 @@ function validate_inputs() {
             fi
         fi
     fi
-
 }
 
 function get_dev() {
@@ -153,8 +152,6 @@ function inject_files() {
         mount /dev/`get_dev dat.share` /mnt/bigip-shared
         cp $hotfixisofile /mnt/bigip-shared/images
     fi
-
-    
 }
 
 function load_nbd() {
