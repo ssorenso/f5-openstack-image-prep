@@ -171,11 +171,6 @@ if ! [ $userdata_file == 'none' ]; then
     fi
 fi
 
-if [ -n "$baseisofile" -a -z "$hotfixisofile" ]; then
-    echo "Must specify hotfix iso when base iso specified"
-    badusage
-fi
-
 if [ -n "$hotfixisofile" -a -z "$baseisofile" ]; then
     echo "Must specify base iso when hotfix iso specified"
     badusage
