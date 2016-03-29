@@ -298,6 +298,10 @@ fi
 if [ -n "$baseisofile" ]; then
     mount /dev/`get_dev dat.share` /mnt/bigip-shared
     cp $baseisofile /mnt/bigip-shared/images
+fi
+
+if [ -n "$hotfixisofile" ]; then
+    mount /dev/`get_dev dat.share` /mnt/bigip-shared
     cp $hotfixisofile /mnt/bigip-shared/images
 fi
 
