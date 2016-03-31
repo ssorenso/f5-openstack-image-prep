@@ -171,11 +171,6 @@ if ! [ $userdata_file == 'none' ]; then
     fi
 fi
 
-if [ -n "$baseisofile" -a -z "$hotfixisofile" ]; then
-    echo "Must specify hotfix iso when base iso specified"
-    badusage
-fi
-
 if [ -n "$hotfixisofile" -a -z "$baseisofile" ]; then
     echo "Must specify base iso when hotfix iso specified"
     badusage
@@ -303,6 +298,10 @@ fi
 if [ -n "$baseisofile" ]; then
     mount /dev/`get_dev dat.share` /mnt/bigip-shared
     cp $baseisofile /mnt/bigip-shared/images
+fi
+
+if [ -n "$hotfixisofile" ]; then
+    mount /dev/`get_dev dat.share` /mnt/bigip-shared
     cp $hotfixisofile /mnt/bigip-shared/images
 fi
 
