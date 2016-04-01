@@ -298,6 +298,30 @@ validate_packages
 # exit on error
 set -x
 
+if [ -n "$baseisofile" ]; then
+    if [ ! -f "$baseisofile" ]; then
+        if [ ! -f "$temp_dir/../added/$baseisofile" ]; then
+            echo "Can't find base iso file $baseisofile"
+            badusage
+        else
+            baseisofile="$temp_dir/../added/$baseisofile"
+        fi
+    fi
+fi
+
+if [ -n "$hotfixisofile" ]; then
+    if [ ! -f "$hotfixisofile" ]; then
+        if [ ! -f "$temp_dir/../added/$hotfixisofile" ]; then
+            echo "Can't find hotfix iso file $hotfixisofile"
+            badusage
+        else
+            hotfixisofile="$temp_dir/../added/$hotfixisofile"
+        fi
+    fi
+fi
+
+check_oldfile_full_path
+
 sleep 2
 qemu-nbd -d /dev/nbd0
 sleep 2
@@ -325,7 +349,6 @@ umount /mnt/bigip-shared || [ $? -eq 1 ]
 mount /dev/`get_dev set.1._config` /mnt/bigip-config
 
 inject_files
-check_oldfile_full_path
 
 sleep 2
 umount /mnt/bigip-config
