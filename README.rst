@@ -1,8 +1,6 @@
 F5 OpenStack VE Image Preparation
 =================================
 
-|Build Status| |Docs Build Status|
-
 - Used to patch and upload F5 VE images into OpenStack Glance.
 - Accepts a single VE file and uploads it alone
 

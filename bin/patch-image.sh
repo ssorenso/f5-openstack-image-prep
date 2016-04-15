@@ -78,13 +78,8 @@ function validate_packages() {
 }
 
 function validate_inputs() {
-    if ! [ -f $startup_file ]; then
-        echo "startup file $startup_file does not exist"
-        badusage
-    fi
-
-    if ! [ -d $startup_functions ]; then
-        echo "startup functions directory does not exist"
+    if ! [ -f $startup_pkg ]; then
+        echo "startup file $startup_pkg does not exist"
         badusage
     fi
 
@@ -128,12 +123,8 @@ function get_dev() {
 }
 
 function inject_files() {
-    if [ -f $startup_file ]; then
-        cp $startup_file /mnt/bigip-config/startup
-    fi
-
-    if [ -d "$startup_functions" ]; then
-        cp -R $startup_functions /mnt/bigip-config/
+    if [ -f $startup_pkg ]; then
+        tar -xf $startup_pkg -C /mnt/bigip-config/
     fi
 
     if $firstboot_file; then
@@ -214,20 +205,18 @@ function check_oldfile_full_path() {
 temp_dir="$HOME/.f5-image-prep/tmp"
 userdata_file='none'
 firstboot_file=false
-startup_functions=''
 
 function badusage {
-    echo "usage: patch-image -s startup_file -d startup_functions -f -u userdata_file <image.qcow2>"
+    echo "usage: patch-image -s startup_pkg -f -u userdata_file <image.qcow2>"
     echo ""
     echo "Options:"
-    echo "   -s : [full_path_to_startup_script] : user defined startup script"
-    echo "   -d : [full_path_to_startup_script] : user defined startup script functions"
+    echo "   -s : [full_path_to_startup_script_tarball] : user-defined startup scripts in a tarball"
     echo "   -f : touches a /config/firstboot file"
     echo "   -u : [full_path_to_userdata] - user defined default userdata JSON file"
     echo "   -t : [full_path_to_temp_dir] - working directory to patch image"
     echo "   -o : [patched image name] - name given to the patched image file"
-    echo "   -b : [base iso name] - base iso to copy to /shared on image"
-    echo "   -h : [hotfix iso name] - hotfix iso to copy to /shared on image"
+    echo "   -b : [base_iso_name] - base iso to copy to /shared on image"
+    echo "   -h : [hotfix_iso_name] - hotfix iso to copy to /shared on image"
     echo ""
     echo "The image file name must end with .qcow2"
     echo ""
@@ -260,13 +249,10 @@ else
   fi
 fi
 
-while getopts :s:d:u:ft:o:b:h: opt "$@"; do
+while getopts :s:u:ft:o:b:h: opt "$@"; do
   case $opt in
    s)
-       startup_file=$OPTARG
-       ;;
-   d)
-       startup_functions=$OPTARG
+       startup_pkg=$OPTARG
        ;;
    u)
        userdata_file=$OPTARG

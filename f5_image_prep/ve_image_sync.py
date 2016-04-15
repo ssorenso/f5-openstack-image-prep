@@ -24,11 +24,8 @@ from f5_image_prep.openstack.openstack import get_creds
 CONTAINERFORMAT = 'bare'
 DISKFORMAT = 'qcow2'
 PATCHTOOL = '/home/imageprep/f5-openstack-image-prep/bin/patch-image.sh'
-STARTUPSCRIPT = \
-    '/home/imageprep/f5-openstack-image-prep/lib/f5_image_prep/startup'
-STARTUPFUNCS = \
-    '/home/imageprep/f5-openstack-image-prep/lib/f5_image_prep/' \
-    'os-functions/'
+STARTUPSCRIPTPKG = \
+    '/home/imageprep/f5-openstack-image-prep/lib/f5_image_prep/startup.tar'
 WORKDIR = os.environ['HOME']
 
 
@@ -47,7 +44,7 @@ class ImagePatchFailed(Exception):
 class VEImageSync(object):
     '''Handle synchronization of VE glance images.'''
 
-    def __init__(self, creds, imgfile, workdir=WORKDIR):
+    def __init__(self, creds, imgfile, startup_script_pkg, workdir=WORKDIR):
         '''Initialize a VEImageSync object.
 
         :param img_location: str -- path to a VE image
@@ -56,6 +53,7 @@ class VEImageSync(object):
 
         self.os_creds = creds
         self.img_file = imgfile
+        self.startup_script_pkg = startup_script_pkg
 
         if not os.path.isfile(self.img_file):
             msg = 'Local file {} does not exist'.format(self.img_file)
@@ -78,8 +76,7 @@ class VEImageSync(object):
         print('\n\nPatching image...\n\n')
         patched_img_name = 'os_ready-' + self.filename
         patch_call = ['sudo', '/bin/bash', PATCHTOOL, '-f',
-                      '-s', STARTUPSCRIPT,
-                      '-d', STARTUPFUNCS,
+                      '-s', self.startup_script_pkg,
                       '-t', self.work_dir[:-1],
                       '-o', patched_img_name,
                       self.img_file]
@@ -131,9 +128,14 @@ if __name__ == "__main__":
         required=True
     )
     parser.add_argument(
-        '-w', '--workingdirectory',
+        '-w', '--working-directory',
         default="%s" % os.environ['HOME'],
         help='Directory to save working files.'
+    )
+    parser.add_argument(
+        '-s', '--startup-script-package',
+        default=STARTUPSCRIPTPKG,
+        help='Startup script tarball which will be injected into the VE.'
     )
     args = parser.parse_args()
 
@@ -141,6 +143,7 @@ if __name__ == "__main__":
     ve_image_sync = VEImageSync(
         creds,
         args.imagefile,
-        workdir=args.workingdirectory
+        startup_script=args.startup_script,
+        workdir=args.working_directory
     )
     ve_image_sync.sync_image()

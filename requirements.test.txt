@@ -1,4 +1,5 @@
 # These packages are required when testing the module
+python-glanceclient
 hacking
 pytest
 pytest-cov
