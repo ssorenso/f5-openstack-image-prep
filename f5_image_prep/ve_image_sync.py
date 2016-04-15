@@ -143,7 +143,7 @@ if __name__ == "__main__":
     ve_image_sync = VEImageSync(
         creds,
         args.imagefile,
-        startup_script=args.startup_script,
+        startup_script=args.startup_script_package,
         workdir=args.working_directory
     )
     ve_image_sync.sync_image()
