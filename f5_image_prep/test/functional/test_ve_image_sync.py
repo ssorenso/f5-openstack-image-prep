@@ -25,10 +25,12 @@ import sys
 BIGIPFILE = 'BIGIP-11.6.0.0.0.401.qcow2'
 VEIS_SCRIPT = \
     '/home/imageprep/f5-openstack-image-prep/f5_image_prep/ve_image_sync.py'
-os.environ['OS_TENANT_NAME'] = 'admin'
-os.environ['OS_USERNAME'] = 'admin'
-os.environ['OS_PASSWORD'] = 'changeme'
-os.environ['OS_AUTH_URL'] = 'http://10.190.4.147:5000/v2.0'
+STARTUP_SCRIPT = \
+    '/home/imageprep/f5-openstack-image-prep/lib/f5_image_prep/startup.tar'
+os.environ['OS_TENANT_NAME'] = '<os_tenant>'
+os.environ['OS_USERNAME'] = '<os_username>'
+os.environ['OS_PASSWORD'] = '<os_password>'
+os.environ['OS_AUTH_URL'] = 'http://<keystone_ip>:5000/v2.0'
 TEST_IMG = None
 
 
@@ -54,7 +56,9 @@ def test_image_sync(VEImageSync):
 
 
 def test_image_sync_command_line():
-    output = subprocess.check_output(['python', VEIS_SCRIPT, '-i', BIGIPFILE])
+    output = subprocess.check_output(
+        ['python', VEIS_SCRIPT, '-i', BIGIPFILE, '-s', STARTUP_SCRIPT]
+    )
     assert 'Patching image...' in output
     assert 'Uploading patched image to glance...' in output
     assert 'Image Model:' in output

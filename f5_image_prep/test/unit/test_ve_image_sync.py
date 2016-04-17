@@ -32,12 +32,12 @@ class FakeImageModel(object):
 def VEImageSync():
     with mock.patch('f5_image_prep.ve_image_sync.os.path.isfile') as mock_file:
         mock_file.return_value = True
-        return veis(mock.MagicMock(), '/test/img.qcow2', '/test/')
+        return veis(mock.MagicMock(), '/test/img.qcow2', '/test.tar')
 
 
 def test___init__(VEImageSync):
     assert VEImageSync.img_file == '/test/img.qcow2'
-    assert VEImageSync.work_dir == '/test/'
+    assert VEImageSync.work_dir == '/home/imageprep/'
 
 
 def test__init__no_img_file():
@@ -70,12 +70,11 @@ def test__patch_image(VEImageSync):
                     ['sudo', '/bin/bash',
                      '/home/imageprep/f5-openstack-image-prep/bin/'
                      'patch-image.sh',
-                     '-f', '-s', HOMEDIR + 'lib/f5-image-prep/startup',
-                     '-d', HOMEDIR + 'lib/f5-image-prep/openstack-functions/',
-                     '-t', '/test',
+                     '-f', '-s', '/test.tar',
+                     '-t', '/home/imageprep',
                      '-o', 'os_ready-img.qcow2', '/test/img.qcow2'],
                 )
-            assert patch_path == '/test/os_ready-img.qcow2'
+            assert patch_path == '/home/imageprep/os_ready-img.qcow2'
 
 
 def test__patch_image_imagepatchfailed(VEImageSync):
