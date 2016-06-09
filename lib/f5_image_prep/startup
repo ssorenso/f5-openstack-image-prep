@@ -247,6 +247,7 @@ function main() {
     fi
 
     cleanup_user_data
+    tmsh modify sys global-settings gui-setup disabled | eval $LOGGER_CMD
 
     finish=$(date +%s)
     log "Completed OpenStack auto-configuration in $(($finish-$start)) seconds..."
