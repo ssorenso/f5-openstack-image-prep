@@ -217,6 +217,7 @@ function get_local_userdata() {
 # 3. For each device, make sure that it is not a disk partition.  The
 #    device should only be an unpartitioned disk.
 function get_candidate_config_drives() {
+    populate_cache=$(blkid /dev/hd* /dev/sr*)
     config2_dev=$(blkid -t LABEL="config-2" -o device)
     iso9660_devs=$(blkid -t TYPE="iso9660" -o device | sort -r)
     vfat_devs=$(blkid -t TYPE="vfat" -o device | sort -r)
