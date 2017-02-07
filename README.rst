@@ -35,7 +35,7 @@ Installation
 ~~~~~~~~~~~~
 You can either clone this repo, or use the command below to install it using ``pip``.
 
-``sudo pip install git:https://github.com/F5Networks/f5-openstack-image-prep``
+``sudo pip install git+https://github.com/F5Networks/f5-openstack-image-prep.git``
 
 
 Updating Code
