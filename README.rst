@@ -6,9 +6,9 @@ f5-openstack-image-prep
 Introduction
 ------------
 
-The standard F5® BIG-IP® Virtual Edition (VE) images available from f5.com must be 'patched' in order to be compatible with OpenStack. This repository's contents make it possible to patch and upload F5® VE images into OpenStack Glance.
+The standard F5 BIG-IP Virtual Edition (VE) images available from f5.com must be 'patched' in order to be compatible with OpenStack. This repository's contents make it possible to patch and upload F5 VE images into OpenStack Glance.
 
-The easiest way to patch a VE image for use in OpenStack is to use the F5® Heat template 'patch_upload_ve_image.yaml'. Please see the `F5® Heat User Guide <http://f5-openstack-heat.readthedocs.io/en/latest/map_heat-user-guide.html>`_ for instructions.
+The easiest way to patch a VE image for use in OpenStack is to use the F5 Heat template 'patch_upload_ve_image.yaml'. Please see the `F5 Heat User Guide <http://f5-openstack-heat.readthedocs.io/en/latest/map_heat-user-guide.html>`_ for instructions.
 
 For Developers
 --------------
@@ -30,10 +30,10 @@ To install the project requirements:
 
 ``sudo pip install -R requirements.txt``
 
-Because the ``bin/patch-image.sh`` script manipulates the host kernel it will only run successfully in environments that permit kernel manipulation, e.g. `lsmod`, and `modprobe nbd`.  THIS PRECLUDES THE USE OF (MOST) CONTAINERS!!
-In addition the script needs to `mount` and `umount` filesystems (using the `nbd` drivers) so rights to devices/mount points etc. is also necessary.
+Because the ``bin/patch-image.sh`` script manipulates the host kernel, it will only run successfully in environments that permit kernel manipulation (e.g., ``lsmod``, and ``modprobe nbd``).  THIS PRECLUDES THE USE OF (MOST) CONTAINERS!!
+The script also needs to ``mount`` and ``umount`` filesystems (using the ``nbd`` drivers) so rights to devices/mount points, etc., are  necessary.
 
-As of this writing only Ubuntu 14.04 has been verified to support the patch script, a patch for 16.04 is currently under review. 
+Currently, Ubuntu 14.04 has been verified to support the patch scrip; a patch for 16.04 is under review. 
 
 Installation
 ~~~~~~~~~~~~
