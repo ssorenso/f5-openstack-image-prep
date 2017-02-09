@@ -30,6 +30,10 @@ To install the project requirements:
 
 ``sudo pip install -R requirements.txt``
 
+Because the ``bin/patch-image.sh`` script manipulates the host kernel it will only run successfully in environments that permit kernel manipulation, e.g. `lsmod`, and `modprobe nbd`.  THIS PRECLUDES THE USE OF (MOST) CONTAINERS!!
+In addition the script needs to `mount` and `umount` filesystems (using the `nbd` drivers) so rights to devices/mount points etc. is also necessary.
+
+As of this writing only Ubuntu 14.04 has been verified to support the patch script, a patch for 16.04 is currently under review. 
 
 Installation
 ~~~~~~~~~~~~
