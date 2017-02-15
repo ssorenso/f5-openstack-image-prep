@@ -39,8 +39,28 @@ readonly TMM_IF_REGEX='^1\.[0-9]$'
 readonly IP_REGEX='^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$'
 readonly SELFIP_ALLOW_SERVICE_REGEX='^(all|default|none)$'
 
+function get_bigip_version () {
+    # query and slices to obtain the initial chars
+    # in a BIGIP version string, e.g. 12 from BIGIP 12.1.x
+    echo `cat /etc/issue | head -n 1 | cut -d' ' -f2 | cut -d'.' -f1`
+}
+
+function set_iface_value () {
+    # Set the network interface name as a function of the
+    # initial chars in a BIGIP version string.  We do this
+    # because the name of the managment interface changes
+    # from eth0 to mgmt in version 13.
+    if (( "$1" >= "13"))
+        then
+            echo mgmt
+        else
+            echo eth0
+    fi
+}
+
 function get_mgmt_ip() {
-    echo -n $(/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}')
+    # get the mgmt_ip by querying the expected interface.
+    echo -n $(/sbin/ifconfig $(set_iface_value $(get_bigip_version)) | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}')
 }
 
 function get_dns_suffix() {
