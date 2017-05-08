@@ -20,6 +20,7 @@ source /config/os-functions/openstack-license.sh
 source /config/os-functions/openstack-network.sh
 source /config/os-functions/openstack-ssh.sh
 source /config/os-functions/openstack-password.sh
+source /config/os-functions/openstack-wait-handler.sh
 
 function restore_issue() {
     cat /etc/issue | head -n 2 > /etc/issue
@@ -245,6 +246,8 @@ function main() {
     else
 		log "Cannot run OpenStack auto-configuration on non-VE platforms, quitting..."
     fi
+
+    wait_condition_notify
 
     cleanup_user_data
     tmsh modify sys global-settings gui-setup disabled | eval $LOGGER_CMD
