@@ -13,7 +13,6 @@
 # limitations under the License.
 #
 
-from setuptools import find_packages
 from setuptools import setup
 
 import f5_image_prep
@@ -32,4 +31,6 @@ setup(
         'Programming Language :: Python',
         'Intended Audience :: System Administrators',
     ],
+    install_requires=['python-keystoneclient == 1.7.2',
+                      'python-glanceclient == 1.2.0']
 )
