@@ -50,7 +50,8 @@ function set_iface_value () {
     # initial chars in a BIGIP version string.  We do this
     # because the name of the managment interface changes
     # from eth0 to mgmt in version 13.
-    if (( "$1" >= "13"))
+    version=$(tmsh show /sys version | grep -i version)
+    if [ $(perl -le "print (\"\$$version\" =~ /(\d+)\.\d+\.\d+/)") -ge 13 ]
         then
             echo mgmt
         else
