@@ -247,6 +247,11 @@ function main() {
 		log "Cannot run OpenStack auto-configuration on non-VE platforms, quitting..."
     fi
 
+    # Delete the /config/firstboot file, we have completed initial setup
+    if [[ ${IS_FIRST_BOOT} == "true" ]]; then
+        rm -f $FIRST_BOOT_FILE
+    fi
+
     wait_condition_notify
 
     cleanup_user_data
